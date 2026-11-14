@@ -1,0 +1,305 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SDD Guide</title>
+<meta name="description" content="A practical guide to Spec-Driven Development from zero.">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="layout">
+<nav>
+  <div class="brand">SDD Guide</div>
+  <div class="sub">Spec-Driven Development</div>
+  <div class="links">
+    <a href="#s1">1. TL;DR</a><a href="#s2">2. Why</a><a href="#s3">3. What is a spec</a><a href="#s4">4. When to use</a>
+    <a href="#s5">5. Where it fits</a><a href="#s6">6. Repo layout</a><a href="#s7">7. Writing specs</a><a href="#s8">8. Lifecycle</a>
+    <a href="#s9">9. AI agents</a><a href="#s10">10. OpenSpec</a><a href="#s11">11. Example</a><a href="#s12">12. Checklists</a>
+    <a href="#s13">13. Mistakes</a><a href="#s14">14. FAQ</a>
+  </div>
+  <a class="lang" href="az.html">Azərbaycanca</a><br>
+  <button class="themebtn" id="theme">Toggle theme</button>
+</nav>
+<main>
+<header class="hero">
+  <h1>Spec first, code second</h1>
+  <p>A practical introduction to Spec-Driven Development: what it is, when it pays off, how to write a spec, and how to start in a team.</p>
+  <div class="pills"><span class="pill">For backend developers</span><span class="pill">~15 min</span><span class="pill">Examples: OpenSpec</span></div>
+</header>
+
+<section id="s1">
+<h2><span class="n">01</span>TL;DR</h2>
+<div class="grid g3">
+  <div class="card"><div class="big">Spec reviewed first</div><p class="muted">In its own MR, with no code. Approval is the green light to build.</p></div>
+  <div class="card"><div class="big">Code follows the spec</div><p class="muted">Task by task, by you or an AI agent. Review checks code against the spec.</p></div>
+  <div class="card"><div class="big">Archive = living docs</div><p class="muted">After release the spec merges into <code>specs/</code>: how the system works today.</p></div>
+</div>
+<div class="grid g2" style="margin-top:12px">
+  <div class="card"><span class="tag yes">Use it</span><p style="margin:8px 0 0">New services, endpoints, consumers, schema changes, cross-service flows, AI-heavy changes.</p></div>
+  <div class="card"><span class="tag no">Skip it</span><p style="margin:8px 0 0">Bug fixes, config, dependency bumps, incident hotfixes.</p></div>
+</div>
+</section>
+
+<section id="s2">
+<h2><span class="n">02</span>Why bother?</h2>
+<div class="grid g2 vs">
+  <div class="card before"><h4>Without a spec</h4><ul>
+    <li>A ticket arrives, coding starts right away</li>
+    <li>A 1,500-line MR, the reviewer reverse-engineers intent</li>
+    <li>The design debate starts when change is expensive</li>
+    <li>A year later, "why?" is lost in chat</li>
+    <li>The AI agent guesses from a prompt</li></ul></div>
+  <div class="card after"><h4>With a spec</h4><ul>
+    <li>Design is a 1-2 page document</li>
+    <li>Debate happens before any code exists</li>
+    <li>Rejecting a spec costs an hour, not days</li>
+    <li>"Why?" lives in the repo</li>
+    <li>The agent follows an agreed contract</li></ul></div>
+</div>
+</section>
+
+<section id="s3">
+<h2><span class="n">03</span>What is a spec?</h2>
+<div class="callout">A <b>spec</b> describes how the system <b>must behave</b>, in a way you can verify. The code is its implementation.</div>
+<div class="grid g2">
+  <div class="card"><span class="tag never">Not a spec</span><p style="margin:8px 0 0">"Add an <code>if</code> to <code>OrderPublishService</code>."</p></div>
+  <div class="card"><span class="tag yes">A spec</span><p style="margin:8px 0 0">"When a request in status <code>SENT</code> is republished, the system SHALL respond 409."</p></div>
+</div>
+<div class="grid g3" style="margin-top:12px">
+  <div class="card"><b>1. Normative words</b><p class="muted" style="margin:6px 0 0"><code>SHALL</code> must, <code>SHOULD</code> recommended, <code>MAY</code> optional (RFC 2119).</p></div>
+  <div class="card"><b>2. Scenarios</b><p class="muted" style="margin:6px 0 0">Every requirement has at least one WHEN / THEN.</p></div>
+  <div class="card"><b>3. Testable</b><p class="muted" style="margin:6px 0 0">If a scenario cannot become a test, rewrite it.</p></div>
+</div>
+</section>
+
+<section id="s4">
+<h2><span class="n">04</span>When to use it</h2>
+<div class="tablewrap"><table>
+<tr><th>Change</th><th>Spec?</th></tr>
+<tr><td>New service or capability</td><td><span class="tag yes">Yes</span></td></tr>
+<tr><td>New endpoint, consumer, schema change, cross-service flow</td><td><span class="tag yes">Yes - sweet spot</span></td></tr>
+<tr><td>An AI agent writes most of the code</td><td><span class="tag yes">Yes</span></td></tr>
+<tr><td>Refactoring with no behavior change</td><td><span class="tag opt">Optional</span></td></tr>
+<tr><td>Bug fix, config, dependency bump, one-liner</td><td><span class="tag no">No</span></td></tr>
+<tr><td>Production incident hotfix</td><td><span class="tag never">Never</span></td></tr>
+</table></div>
+<div class="callout ok"><b>The one rule that matters:</b> if a change needs a spec, do not start implementing until the spec is approved. Small changes may put spec and code in one MR, spec commits first.</div>
+<div class="callout warn">Writing a spec for a one-liner means you are doing it wrong. SDD is a design habit, not bureaucracy.</div>
+</section>
+
+<section id="s5">
+<h2><span class="n">05</span>Where SDD fits</h2>
+<div class="tablewrap"><table>
+<tr><th>Step</th><th>Owner</th><th>What SDD changes</th></tr>
+<tr><td>Story, business acceptance criteria</td><td>Product</td><td class="muted">Nothing</td></tr>
+<tr><td>Ready for development</td><td>Team</td><td class="muted">Ready before the spec starts</td></tr>
+<tr><td><b>Technical design, sub-tasks</b></td><td>Developer</td><td><b>This is SDD:</b> proposal, spec, tasks</td></tr>
+<tr><td>Implementation</td><td>Developer</td><td>Follows the spec</td></tr>
+<tr><td>Code review</td><td>Dev + reviewer</td><td>Code checked against the spec</td></tr>
+<tr><td>After release</td><td>Developer</td><td>Archive, no new ticket</td></tr>
+</table></div>
+</section>
+
+<section id="s6">
+<h2><span class="n">06</span>What lives in the repo</h2>
+<pre class="tree">openspec/
+├── project.md              <span class="muted"># conventions, written once</span>
+├── <span class="hl">specs/</span>                  <span class="muted"># CURRENT behavior</span>
+│   └── &lt;capability&gt;/spec.md
+└── <span class="hl">changes/</span>                <span class="muted"># PROPOSED behavior</span>
+    ├── &lt;change-name&gt;/
+    │   ├── proposal.md     <span class="muted"># why + what, ~1 page</span>
+    │   ├── tasks.md        <span class="muted"># work list</span>
+    │   ├── design.md       <span class="muted"># optional decisions</span>
+    │   └── specs/          <span class="muted"># ADDED / MODIFIED / REMOVED</span>
+    └── archive/YYYY-MM-DD-&lt;change-name&gt;/</pre>
+<div class="tablewrap" style="margin-top:12px"><table>
+<tr><th>File</th><th>Purpose</th><th>Review</th></tr>
+<tr><td><code>project.md</code></td><td>Conventions for humans and agents</td><td class="muted">Once</td></tr>
+<tr><td><code>proposal.md</code></td><td>Why, what changes, what does not</td><td>Before code</td></tr>
+<tr><td><code>specs/</code> deltas</td><td>Requirements + scenarios</td><td><b>Main target</b></td></tr>
+<tr><td><code>design.md</code></td><td>Non-obvious decisions, alternatives</td><td class="muted">If needed</td></tr>
+<tr><td><code>tasks.md</code></td><td>Checklist to work through</td><td class="muted">Skim</td></tr>
+</table></div>
+</section>
+
+<section id="s7">
+<h2><span class="n">07</span>Writing a spec</h2>
+<pre>## ADDED Requirements
+
+### Requirement: Manual republish of a failed order event
+The system SHALL allow a manual republish only when the request status is FAIL.
+
+#### Scenario: Failed request is republished
+- **WHEN** an operator calls `POST /v1/orders/{orderId}/republish` for a request in status FAIL
+- **AND** the message broker acknowledges the event
+- **THEN** the system responds 204
+- **AND** the request status becomes SENT
+
+#### Scenario: Request was already sent
+- **WHEN** an operator calls republish for a request in status SENT
+- **THEN** the system responds 409 with code REPUBLISH_NOT_ALLOWED
+- **AND** no event is published</pre>
+<h3>Bad vs good</h3>
+<div class="tablewrap"><table>
+<tr><th>Bad</th><th>Good</th><th>Why</th></tr>
+<tr><td>"Errors must be handled properly"</td><td>"No broker ack within 30 s: the system SHALL mark the request FAIL"</td><td class="muted">"Properly" is untestable</td></tr>
+<tr><td>"Create an <code>OrderEventHandler</code> class"</td><td>"A duplicate event SHALL NOT create a new request"</td><td class="muted">Behavior, not classes</td></tr>
+<tr><td>A requirement with no scenario</td><td>At least one WHEN/THEN</td><td class="muted">No scenario, no test</td></tr>
+<tr><td>Five cases in one scenario</td><td>One case per scenario</td><td class="muted">Scenario = test</td></tr>
+</table></div>
+<div class="grid g2" style="margin-top:12px">
+<div><h3>proposal.md template</h3><pre># Proposal: &lt;short title&gt;
+Ticket: &lt;KEY&gt;.
+
+## Why
+&lt;problem, why now&gt;
+
+## What Changes
+- &lt;behavior change&gt;
+- &lt;what does NOT change&gt;
+
+## Capabilities
+### New / Modified
+- `&lt;name&gt;`: &lt;one sentence&gt;
+
+## Impact
+- &lt;services, config, DB, contracts&gt;
+- &lt;risks&gt;</pre></div>
+<div><h3>design.md decision</h3>
+<div class="card"><p style="margin:0"><b>Decision:</b> publish synchronously, wait for the broker ack with a timeout.</p>
+<p><b>Why:</b> the status (SENT or FAIL) depends on the ack.</p>
+<p style="margin:0"><b>Alternative:</b> fire-and-forget. Rejected: a failed send could not be recorded reliably.</p></div>
+<p class="muted">Only for decisions that are not obvious.</p></div>
+</div>
+</section>
+
+<section id="s8">
+<h2><span class="n">08</span>The lifecycle of one change</h2>
+<p class="muted">Click a step.</p>
+<div class="flow" data-detail="lifeDetail">
+  <div class="step"><div class="num"></div><b>Propose</b><span>change folder</span><p>Create <code>openspec/changes/&lt;name&gt;/</code> with proposal, spec deltas and tasks. Link the ticket.</p></div>
+  <div class="step"><div class="num"></div><b>Validate</b><span>--strict</span><p>Run <code>openspec validate &lt;name&gt; --strict</code>. Fix every error before asking for review.</p></div>
+  <div class="step"><div class="num"></div><b>Spec review</b><span>no code</span><p>An MR with only the change folder. Approval means "go build it".</p></div>
+  <div class="step"><div class="num"></div><b>Implement</b><span>from tasks.md</span><p>Tick tasks off. New scope? Update the spec first, re-validate, then code.</p></div>
+  <div class="step"><div class="num"></div><b>Code review</b><span>vs the spec</span><p>A normal MR linking the change folder. The reviewer checks code against the approved scenarios.</p></div>
+  <div class="step"><div class="num"></div><b>Archive</b><span>after release</span><p><code>openspec archive &lt;name&gt;</code>: deltas merge into <code>specs/</code>. Usually inside the code MR.</p></div>
+</div>
+<div class="card detail" id="lifeDetail"></div>
+<div class="callout warn"><code>Refs &lt;KEY&gt;</code> in the spec MR, <code>Closes &lt;KEY&gt;</code> only in the code MR. Otherwise the ticket closes with no code.</div>
+</section>
+
+<section id="s9">
+<h2><span class="n">09</span>Working with AI agents</h2>
+<div class="grid g2">
+  <div class="card"><b>Spec, not prompt</b><p class="muted" style="margin:6px 0 0">The agent works from the approved spec and <code>tasks.md</code>, following <code>project.md</code>.</p></div>
+  <div class="card"><b>A human owns it</b><p class="muted" style="margin:6px 0 0">Agent-written specs get the same review. Whoever opens the MR is the author.</p></div>
+  <div class="card"><b>No silent drift</b><p class="muted" style="margin:6px 0 0">Leaving the spec means updating the spec first and re-reviewing.</p></div>
+  <div class="card"><b>Close every finding</b><p class="muted" style="margin:6px 0 0">Fix it, document the trade-off, or move it to a ticket.</p></div>
+  <div class="card"><b>No secrets in prompts</b><p class="muted" style="margin:6px 0 0">Keys, credentials, personal or production data. Approved tools only.</p></div>
+  <div class="card"><b>Mark AI commits</b><p class="muted" style="margin:6px 0 0">For example a <code>Co-Authored-By:</code> trailer. Keep MRs readable in one sitting.</p></div>
+</div>
+<div class="callout">💡 <b>Idea grilling:</b> give the agent your rough idea and ask it to question you first. Hidden questions surface early.</div>
+</section>
+
+<section id="s10">
+<h2><span class="n">10</span>OpenSpec in five commands</h2>
+<pre>npm install -g @fission-ai/openspec</pre>
+<div class="tablewrap" style="margin-top:12px"><table>
+<tr><th>Task</th><th>Command</th></tr>
+<tr><td>Set up a repo</td><td><code>openspec init</code></td></tr>
+<tr><td>List open changes</td><td><code>openspec list</code></td></tr>
+<tr><td>Validate before review</td><td><code>openspec validate &lt;name&gt; --strict</code></td></tr>
+<tr><td>Show</td><td><code>openspec show &lt;name&gt;</code></td></tr>
+<tr><td>Archive after release</td><td><code>openspec archive &lt;name&gt;</code></td></tr>
+</table></div>
+<p class="muted">Pin the tool version. The practice matters, the tool does not: plain Markdown works too.</p>
+</section>
+
+<section id="s11">
+<h2><span class="n">11</span>Worked example: tasks.md</h2>
+<pre>## 1. API
+- [ ] 1.1 Add POST /v1/orders/{orderId}/republish - verify with controller test for 204/404/409
+- [ ] 1.2 Map error codes to responses - verify with error-handler test
+
+## 2. Logic
+- [ ] 2.1 Allow republish only from FAIL - verify with service test per status
+- [ ] 2.2 SENT on broker ack, FAIL on timeout - verify with broker stub test
+
+## 3. Docs
+- [ ] 3.1 Update the API description</pre>
+<div class="callout ok">Every task ends with <b>"verify with ..."</b>: the test that proves it.</div>
+</section>
+
+<section id="s12">
+<h2><span class="n">12</span>Checklists</h2>
+<div class="grid g2">
+<div class="card check" data-list="en-spec"><b>Before a spec MR</b><div class="progress"><i></i></div>
+  <label><input type="checkbox"><span>Story is ready for development</span></label>
+  <label><input type="checkbox"><span>Proposal: why, what, what does not change, ticket link</span></label>
+  <label><input type="checkbox"><span>Every requirement uses SHALL / SHOULD / MAY</span></label>
+  <label><input type="checkbox"><span>Every requirement has a WHEN/THEN scenario</span></label>
+  <label><input type="checkbox"><span>Every scenario can become a test</span></label>
+  <label><input type="checkbox"><span>Non-obvious decisions in design.md</span></label>
+  <label><input type="checkbox"><span>Every task says how it is verified</span></label>
+  <label><input type="checkbox"><span>validate --strict passes</span></label>
+  <label><input type="checkbox"><span>MR has only the change folder</span></label>
+  <label><input type="checkbox"><span>Refs &lt;KEY&gt;, not Closes</span></label>
+</div>
+<div class="card check" data-list="en-code"><b>Before a code MR</b><div class="progress"><i></i></div>
+  <label><input type="checkbox"><span>Description links the change folder</span></label>
+  <label><input type="checkbox"><span>All tasks ticked</span></label>
+  <label><input type="checkbox"><span>Code stays within the spec</span></label>
+  <label><input type="checkbox"><span>Every scenario has a test</span></label>
+  <label><input type="checkbox"><span>Every AI review finding closed</span></label>
+  <label><input type="checkbox"><span>AI-assisted commits marked</span></label>
+  <label><input type="checkbox"><span>Validation still passes</span></label>
+  <label><input type="checkbox"><span>Archived, or follow-up planned</span></label>
+  <label><input type="checkbox"><span>Closes &lt;KEY&gt;</span></label>
+</div>
+</div>
+<h3>Getting started</h3>
+<div class="flow">
+  <div class="step"><div class="num"></div><b>Pick one feature</b><span>endpoint or consumer</span></div>
+  <div class="step"><div class="num"></div><b>openspec init</b><span>+ project.md</span></div>
+  <div class="step"><div class="num"></div><b>Spec MR</b><span>change folder</span></div>
+  <div class="step"><div class="num"></div><b>Code MR</b><span>+ archive</span></div>
+  <div class="step"><div class="num"></div><b>Retro</b><span>then spread</span></div>
+</div>
+</section>
+
+<section id="s13">
+<h2><span class="n">13</span>Common mistakes</h2>
+<div class="tablewrap"><table>
+<tr><th>Mistake</th><th>Result</th><th>Instead</th></tr>
+<tr><td>Spec written after the code</td><td class="muted">Paperwork, review adds nothing</td><td>Spec first</td></tr>
+<tr><td>Class and method names in the spec</td><td class="muted">A code plan</td><td>Describe behavior</td></tr>
+<tr><td>"Properly", "fast", "user-friendly"</td><td class="muted">Untestable</td><td>Status, code, duration</td></tr>
+<tr><td>Code changed, spec not</td><td class="muted">Silent drift</td><td>Spec first</td></tr>
+<tr><td><code>Closes</code> in the spec MR</td><td class="muted">Ticket closes with no code</td><td><code>Refs</code></td></tr>
+<tr><td>A spec for a one-liner</td><td class="muted">Bureaucracy</td><td>Section 04</td></tr>
+<tr><td>Hotfix waits for a spec</td><td class="muted">Production suffers</td><td>Never wait</td></tr>
+<tr><td>Forgot to archive</td><td class="muted"><code>specs/</code> goes stale</td><td>Archive in code MR</td></tr>
+</table></div>
+</section>
+
+<section id="s14">
+<h2><span class="n">14</span>FAQ</h2>
+<details><summary>Isn't spec review just a second code review?</summary><p>No. It is the one focused discussion of the technical design, and one page is read far more carefully than a big diff. Small changes share one MR.</p></details>
+<details><summary>Does the spec replace the ticket?</summary><p>No. Business intent stays in the ticket. The spec is the technical behavior contract.</p></details>
+<details><summary>Should we keep creating sub-tasks?</summary><p>If you like. <code>tasks.md</code> is the technical breakdown.</p></details>
+<details><summary>Is OpenSpec required?</summary><p>No. Keep the artifacts, review step and archive; any tool works.</p></details>
+<details><summary>Can an AI agent write the spec?</summary><p>Yes. A human still reviews and owns it.</p></details>
+<details><summary>Spec the whole existing service?</summary><p>No. Only new changes. <code>specs/</code> fills up over time.</p></details>
+</section>
+
+<footer>
+  References: <a href="https://github.com/Fission-AI/OpenSpec">OpenSpec</a> · <a href="https://www.rfc-editor.org/rfc/rfc2119">RFC 2119</a> · <a href="https://adr.github.io/">ADR</a><br>
+  Licensed under <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>.
+</footer>
+</main>
+</div>
+<script src="app.js"></script>
+</body>
+</html>

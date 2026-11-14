@@ -1,0 +1,306 @@
+<!doctype html>
+<html lang="az">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SDD Bələdçi</title>
+<meta name="description" content="Spec-Driven Development üzrə sıfırdan praktik bələdçi.">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="layout">
+<nav>
+  <div class="brand">SDD Bələdçi</div>
+  <div class="sub">Spec-Driven Development</div>
+  <div class="links">
+    <a href="#s1">1. Qısaca</a><a href="#s2">2. Niyə</a><a href="#s3">3. Spec nədir</a><a href="#s4">4. Nə vaxt</a>
+    <a href="#s5">5. Prosesdə yeri</a><a href="#s6">6. Repo strukturu</a><a href="#s7">7. Spec yazmaq</a><a href="#s8">8. Həyat dövrü</a>
+    <a href="#s9">9. AI agentlər</a><a href="#s10">10. OpenSpec</a><a href="#s11">11. Nümunə</a><a href="#s12">12. Checklist</a>
+    <a href="#s13">13. Səhvlər</a><a href="#s14">14. FAQ</a>
+  </div>
+  <a class="lang" href="index.html">English</a><br>
+  <button class="themebtn" id="theme">Tema dəyiş</button>
+</nav>
+<main>
+<header class="hero">
+  <h1>Əvvəl spec, sonra kod</h1>
+  <p>Spec-Driven Development-ə praktik giriş: nədir, nə vaxt fayda verir, spec necə yazılır, komandada necə başlamaq olar.</p>
+  <div class="pills"><span class="pill">Backend developerlər üçün</span><span class="pill">~15 dəq</span><span class="pill">Nümunələr: OpenSpec</span></div>
+</header>
+
+<section id="s1">
+<h2><span class="n">01</span>Qısaca</h2>
+<div class="grid g3">
+  <div class="card"><div class="big">Əvvəl spec review</div><p class="muted">Ayrıca MR-da, kodsuz. Approve "yazmağa başla" deməkdir.</p></div>
+  <div class="card"><div class="big">Kod spec-ə görə</div><p class="muted">Task-task, özün və ya AI agent. Review kodu spec ilə yoxlayır.</p></div>
+  <div class="card"><div class="big">Archive = canlı sənəd</div><p class="muted">Release-dən sonra spec <code>specs/</code>-ə birləşir: sistem bu gün necə işləyir.</p></div>
+</div>
+<div class="grid g2" style="margin-top:12px">
+  <div class="card"><span class="tag yes">İstifadə et</span><p style="margin:8px 0 0">Yeni servis, endpoint, consumer, schema dəyişikliyi, servislərarası axın, AI-ın çox yazdığı dəyişiklik.</p></div>
+  <div class="card"><span class="tag no">Lazım deyil</span><p style="margin:8px 0 0">Bug fix, config, dependency yeniləmə, incident hotfix.</p></div>
+</div>
+</section>
+
+<section id="s2">
+<h2><span class="n">02</span>Niyə lazımdır?</h2>
+<div class="grid g2 vs">
+  <div class="card before"><h4>Spec-siz</h4><ul>
+    <li>Ticket gəlir, dərhal kod yazılır</li>
+    <li>1500 sətirlik MR, reviewer niyyəti diff-dən çıxarır</li>
+    <li>Dizayn müzakirəsi dəyişiklik bahalı olanda başlayır</li>
+    <li>Bir il sonra "niyə?" chat-da itib</li>
+    <li>AI agent prompt-dan təxmin edir</li></ul></div>
+  <div class="card after"><h4>Spec ilə</h4><ul>
+    <li>Dizayn 1-2 səhifəlik sənəddə</li>
+    <li>Müzakirə kod yazılmamış olur</li>
+    <li>Spec-i rədd etmək bir saat aparır, günlər yox</li>
+    <li>"Niyə?" repo-dadır</li>
+    <li>Agent razılaşdırılmış müqaviləyə əməl edir</li></ul></div>
+</div>
+</section>
+
+<section id="s3">
+<h2><span class="n">03</span>Spec nədir?</h2>
+<div class="callout"><b>Spec</b> sistemin <b>necə davranmalı olduğunu</b> yoxlanıla bilən şəkildə təsvir edir. Kod onun implementasiyasıdır.</div>
+<div class="grid g2">
+  <div class="card"><span class="tag never">Spec deyil</span><p style="margin:8px 0 0">"<code>OrderPublishService</code>-ə <code>if</code> əlavə et."</p></div>
+  <div class="card"><span class="tag yes">Spec-dir</span><p style="margin:8px 0 0">"Status <code>SENT</code> olan sorğu republish edilsə, sistem 409 qaytarmalıdır (SHALL)."</p></div>
+</div>
+<div class="grid g3" style="margin-top:12px">
+  <div class="card"><b>1. Normativ sözlər</b><p class="muted" style="margin:6px 0 0"><code>SHALL</code> məcburi, <code>SHOULD</code> tövsiyə, <code>MAY</code> istəyə bağlı (RFC 2119).</p></div>
+  <div class="card"><b>2. Ssenarilər</b><p class="muted" style="margin:6px 0 0">Hər tələbin ən azı bir WHEN / THEN ssenarisi.</p></div>
+  <div class="card"><b>3. Test olunur</b><p class="muted" style="margin:6px 0 0">Ssenari testə çevrilmirsə, yenidən yaz.</p></div>
+</div>
+</section>
+
+<section id="s4">
+<h2><span class="n">04</span>Nə vaxt istifadə etmək</h2>
+<div class="tablewrap"><table>
+<tr><th>Dəyişiklik</th><th>Spec?</th></tr>
+<tr><td>Yeni servis və ya capability</td><td><span class="tag yes">Bəli</span></td></tr>
+<tr><td>Yeni endpoint, consumer, schema dəyişikliyi, servislərarası axın</td><td><span class="tag yes">Bəli - ən uyğun hal</span></td></tr>
+<tr><td>Kodun çoxunu AI agent yazır</td><td><span class="tag yes">Bəli</span></td></tr>
+<tr><td>Davranışı dəyişməyən refactoring</td><td><span class="tag opt">İstəyə bağlı</span></td></tr>
+<tr><td>Bug fix, config, dependency, bir sətir</td><td><span class="tag no">Xeyr</span></td></tr>
+<tr><td>Prod incident hotfix</td><td><span class="tag never">Heç vaxt</span></td></tr>
+</table></div>
+<div class="callout ok"><b>Əsas qayda:</b> dəyişikliyə spec lazımdırsa, spec təsdiqlənməmiş implementasiyaya başlama. Kiçik dəyişikliklərdə spec və kod bir MR-da gedə bilər, spec commit-ləri əvvəl.</div>
+<div class="callout warn">Bir sətir üçün spec yazırsansa, səhv edirsən. SDD dizayn vərdişidir, bürokratiya deyil.</div>
+</section>
+
+<section id="s5">
+<h2><span class="n">05</span>Prosesdə yeri</h2>
+<div class="tablewrap"><table>
+<tr><th>Addım</th><th>Sahibi</th><th>SDD nəyi dəyişir</th></tr>
+<tr><td>Story, biznes acceptance criteria</td><td>Product</td><td class="muted">Heç nəyi</td></tr>
+<tr><td>Development-ə hazırlıq</td><td>Komanda</td><td class="muted">Spec-dən əvvəl hazır</td></tr>
+<tr><td><b>Texniki dizayn, sub-task</b></td><td>Developer</td><td><b>SDD buradır:</b> proposal, spec, tasks</td></tr>
+<tr><td>İmplementasiya</td><td>Developer</td><td>Spec üzrə</td></tr>
+<tr><td>Code review</td><td>Dev + reviewer</td><td>Kod spec ilə yoxlanır</td></tr>
+<tr><td>Release-dən sonra</td><td>Developer</td><td>Archive, yeni ticket yox</td></tr>
+</table></div>
+</section>
+
+<section id="s6">
+<h2><span class="n">06</span>Repo-da nə olur</h2>
+<pre class="tree">openspec/
+├── project.md              <span class="muted"># qaydalar, bir dəfə</span>
+├── <span class="hl">specs/</span>                  <span class="muted"># CARİ davranış</span>
+│   └── &lt;capability&gt;/spec.md
+└── <span class="hl">changes/</span>                <span class="muted"># TƏKLİF olunan davranış</span>
+    ├── &lt;change-name&gt;/
+    │   ├── proposal.md     <span class="muted"># niyə + nə, ~1 səhifə</span>
+    │   ├── tasks.md        <span class="muted"># iş siyahısı</span>
+    │   ├── design.md       <span class="muted"># istəyə bağlı qərarlar</span>
+    │   └── specs/          <span class="muted"># ADDED / MODIFIED / REMOVED</span>
+    └── archive/YYYY-MM-DD-&lt;change-name&gt;/</pre>
+<div class="tablewrap" style="margin-top:12px"><table>
+<tr><th>Fayl</th><th>Məqsəd</th><th>Review</th></tr>
+<tr><td><code>project.md</code></td><td>İnsan və agent üçün qaydalar</td><td class="muted">Bir dəfə</td></tr>
+<tr><td><code>proposal.md</code></td><td>Niyə, nə dəyişir, nə dəyişmir</td><td>Koddan əvvəl</td></tr>
+<tr><td><code>specs/</code> delta</td><td>Tələblər + ssenarilər</td><td><b>Əsas hədəf</b></td></tr>
+<tr><td><code>design.md</code></td><td>Açıq olmayan qərarlar, alternativlər</td><td class="muted">Lazım olsa</td></tr>
+<tr><td><code>tasks.md</code></td><td>İcra olunan siyahı</td><td class="muted">Üstündən keç</td></tr>
+</table></div>
+</section>
+
+<section id="s7">
+<h2><span class="n">07</span>Spec yazmaq</h2>
+<pre>## ADDED Requirements
+
+### Requirement: Manual republish of a failed order event
+The system SHALL allow a manual republish only when the request status is FAIL.
+
+#### Scenario: Failed request is republished
+- **WHEN** an operator calls `POST /v1/orders/{orderId}/republish` for a request in status FAIL
+- **AND** the message broker acknowledges the event
+- **THEN** the system responds 204
+- **AND** the request status becomes SENT
+
+#### Scenario: Request was already sent
+- **WHEN** an operator calls republish for a request in status SENT
+- **THEN** the system responds 409 with code REPUBLISH_NOT_ALLOWED
+- **AND** no event is published</pre>
+<p class="muted">Spec-lər adətən ingiliscə yazılır, çünki alətlər və açar sözlər ingiliscədir.</p>
+<h3>Pis və yaxşı</h3>
+<div class="tablewrap"><table>
+<tr><th>Pis</th><th>Yaxşı</th><th>Niyə</th></tr>
+<tr><td>"Xətalar düzgün emal olunmalıdır"</td><td>"Broker 30 san. təsdiq verməsə, sorğu FAIL olmalıdır (SHALL)"</td><td class="muted">"Düzgün" test olunmur</td></tr>
+<tr><td>"<code>OrderEventHandler</code> sinfi yarat"</td><td>"Təkrar event yeni sorğu yaratmamalıdır (SHALL NOT)"</td><td class="muted">Davranış, sinif yox</td></tr>
+<tr><td>Ssenarisiz tələb</td><td>Ən azı bir WHEN/THEN</td><td class="muted">Ssenari yox, test yox</td></tr>
+<tr><td>Bir ssenaridə beş hal</td><td>Hər ssenaridə bir hal</td><td class="muted">Ssenari = test</td></tr>
+</table></div>
+<div class="grid g2" style="margin-top:12px">
+<div><h3>proposal.md şablonu</h3><pre># Proposal: &lt;qısa başlıq&gt;
+Ticket: &lt;KEY&gt;.
+
+## Why
+&lt;problem, niyə indi&gt;
+
+## What Changes
+- &lt;davranış dəyişikliyi&gt;
+- &lt;nə DƏYİŞMİR&gt;
+
+## Capabilities
+### New / Modified
+- `&lt;name&gt;`: &lt;bir cümlə&gt;
+
+## Impact
+- &lt;servis, config, DB, contract&gt;
+- &lt;risklər&gt;</pre></div>
+<div><h3>design.md qərarı</h3>
+<div class="card"><p style="margin:0"><b>Qərar:</b> sinxron göndər, broker təsdiqini timeout ilə gözlə.</p>
+<p><b>Niyə:</b> status (SENT və ya FAIL) təsdiqdən asılıdır.</p>
+<p style="margin:0"><b>Alternativ:</b> fire-and-forget. Rədd: uğursuz göndərişi etibarlı qeyd etmək olmurdu.</p></div>
+<p class="muted">Yalnız açıq-aydın olmayan qərarlar üçün.</p></div>
+</div>
+</section>
+
+<section id="s8">
+<h2><span class="n">08</span>Bir dəyişikliyin həyat dövrü</h2>
+<p class="muted">Addıma klik et.</p>
+<div class="flow" data-detail="lifeDetail">
+  <div class="step"><div class="num"></div><b>Propose</b><span>change qovluğu</span><p><code>openspec/changes/&lt;name&gt;/</code> yarat: proposal, spec delta-ları, tasks. Ticket-ə link ver.</p></div>
+  <div class="step"><div class="num"></div><b>Validate</b><span>--strict</span><p><code>openspec validate &lt;name&gt; --strict</code> işlət. Review-dan əvvəl bütün xətaları düzəlt.</p></div>
+  <div class="step"><div class="num"></div><b>Spec review</b><span>kodsuz</span><p>Yalnız change qovluğu olan MR. Approve "get, yaz" deməkdir.</p></div>
+  <div class="step"><div class="num"></div><b>Implement</b><span>tasks.md üzrə</span><p>Task-ları işarələ. Yeni scope? Əvvəl spec-i yenilə, yenidən validate et, sonra kod.</p></div>
+  <div class="step"><div class="num"></div><b>Code review</b><span>spec-ə qarşı</span><p>Change qovluğuna link verən adi MR. Reviewer kodu ssenarilərlə yoxlayır.</p></div>
+  <div class="step"><div class="num"></div><b>Archive</b><span>release-dən sonra</span><p><code>openspec archive &lt;name&gt;</code>: delta-lar <code>specs/</code>-ə birləşir. Adətən kod MR-ın içində.</p></div>
+</div>
+<div class="card detail" id="lifeDetail"></div>
+<div class="callout warn">Spec MR-da <code>Refs &lt;KEY&gt;</code>, kod MR-da <code>Closes &lt;KEY&gt;</code>. Yoxsa ticket kodsuz bağlanır.</div>
+</section>
+
+<section id="s9">
+<h2><span class="n">09</span>AI agentlərlə iş</h2>
+<div class="grid g2">
+  <div class="card"><b>Spec, prompt yox</b><p class="muted" style="margin:6px 0 0">Agent təsdiqlənmiş spec və <code>tasks.md</code> üzrə, <code>project.md</code> qaydaları ilə işləyir.</p></div>
+  <div class="card"><b>Sahibi insandır</b><p class="muted" style="margin:6px 0 0">Agentin yazdığı spec də review olunur. MR-ı açan müəllifdir.</p></div>
+  <div class="card"><b>Səssiz kənarlaşma yoxdur</b><p class="muted" style="margin:6px 0 0">Spec-dən çıxmaq = əvvəl spec yenilənir və yenidən review olunur.</p></div>
+  <div class="card"><b>Hər tapıntını bağla</b><p class="muted" style="margin:6px 0 0">Düzəlt, trade-off kimi yaz, ya da ticket-ə köçür.</p></div>
+  <div class="card"><b>Prompt-da sirr yoxdur</b><p class="muted" style="margin:6px 0 0">Açar, credential, şəxsi və ya prod data. Yalnız təsdiqlənmiş alətlər.</p></div>
+  <div class="card"><b>AI commit-ləri işarələ</b><p class="muted" style="margin:6px 0 0">Məsələn <code>Co-Authored-By:</code> trailer-i. MR bir oturuşda oxunsun.</p></div>
+</div>
+<div class="callout">💡 <b>Idea grilling:</b> kobud ideyanı agentə ver, əvvəl səni sorğu-suala tutsun. Gizli suallar erkən çıxır.</div>
+</section>
+
+<section id="s10">
+<h2><span class="n">10</span>Beş əmrdə OpenSpec</h2>
+<pre>npm install -g @fission-ai/openspec</pre>
+<div class="tablewrap" style="margin-top:12px"><table>
+<tr><th>Tapşırıq</th><th>Əmr</th></tr>
+<tr><td>Repo-nu qurmaq</td><td><code>openspec init</code></td></tr>
+<tr><td>Açıq dəyişikliklər</td><td><code>openspec list</code></td></tr>
+<tr><td>Review-dan əvvəl yoxlamaq</td><td><code>openspec validate &lt;name&gt; --strict</code></td></tr>
+<tr><td>Baxmaq</td><td><code>openspec show &lt;name&gt;</code></td></tr>
+<tr><td>Release-dən sonra archive</td><td><code>openspec archive &lt;name&gt;</code></td></tr>
+</table></div>
+<p class="muted">Alət versiyasını pin et. Praktika vacibdir, alət yox: sadə Markdown da olar.</p>
+</section>
+
+<section id="s11">
+<h2><span class="n">11</span>İşlənmiş nümunə: tasks.md</h2>
+<pre>## 1. API
+- [ ] 1.1 Add POST /v1/orders/{orderId}/republish - verify with controller test for 204/404/409
+- [ ] 1.2 Map error codes to responses - verify with error-handler test
+
+## 2. Logic
+- [ ] 2.1 Allow republish only from FAIL - verify with service test per status
+- [ ] 2.2 SENT on broker ack, FAIL on timeout - verify with broker stub test
+
+## 3. Docs
+- [ ] 3.1 Update the API description</pre>
+<div class="callout ok">Hər task <b>"verify with ..."</b> ilə bitir: onu sübut edən test.</div>
+</section>
+
+<section id="s12">
+<h2><span class="n">12</span>Checklist-lər</h2>
+<div class="grid g2">
+<div class="card check" data-list="az-spec"><b>Spec MR-dan əvvəl</b><div class="progress"><i></i></div>
+  <label><input type="checkbox"><span>Story development-ə hazırdır</span></label>
+  <label><input type="checkbox"><span>Proposal: niyə, nə, nə dəyişmir, ticket linki</span></label>
+  <label><input type="checkbox"><span>Hər tələbdə SHALL / SHOULD / MAY</span></label>
+  <label><input type="checkbox"><span>Hər tələbin WHEN/THEN ssenarisi var</span></label>
+  <label><input type="checkbox"><span>Hər ssenari testə çevrilir</span></label>
+  <label><input type="checkbox"><span>Açıq olmayan qərarlar design.md-də</span></label>
+  <label><input type="checkbox"><span>Hər task-ın necə yoxlandığı yazılıb</span></label>
+  <label><input type="checkbox"><span>validate --strict keçir</span></label>
+  <label><input type="checkbox"><span>MR-da yalnız change qovluğu</span></label>
+  <label><input type="checkbox"><span>Refs &lt;KEY&gt;, Closes yox</span></label>
+</div>
+<div class="card check" data-list="az-code"><b>Kod MR-dan əvvəl</b><div class="progress"><i></i></div>
+  <label><input type="checkbox"><span>Description change qovluğuna link verir</span></label>
+  <label><input type="checkbox"><span>Bütün task-lar işarələnib</span></label>
+  <label><input type="checkbox"><span>Kod spec-dən kənara çıxmır</span></label>
+  <label><input type="checkbox"><span>Hər ssenarinin testi var</span></label>
+  <label><input type="checkbox"><span>Hər AI review tapıntısı bağlanıb</span></label>
+  <label><input type="checkbox"><span>AI commit-ləri işarələnib</span></label>
+  <label><input type="checkbox"><span>Validasiya yenə keçir</span></label>
+  <label><input type="checkbox"><span>Archive edilib və ya follow-up var</span></label>
+  <label><input type="checkbox"><span>Closes &lt;KEY&gt;</span></label>
+</div>
+</div>
+<h3>Başlamaq</h3>
+<div class="flow">
+  <div class="step"><div class="num"></div><b>Bir feature seç</b><span>endpoint və ya consumer</span></div>
+  <div class="step"><div class="num"></div><b>openspec init</b><span>+ project.md</span></div>
+  <div class="step"><div class="num"></div><b>Spec MR</b><span>change qovluğu</span></div>
+  <div class="step"><div class="num"></div><b>Kod MR</b><span>+ archive</span></div>
+  <div class="step"><div class="num"></div><b>Retro</b><span>sonra yay</span></div>
+</div>
+</section>
+
+<section id="s13">
+<h2><span class="n">13</span>Tez-tez edilən səhvlər</h2>
+<div class="tablewrap"><table>
+<tr><th>Səhv</th><th>Nəticə</th><th>Əvəzinə</th></tr>
+<tr><td>Spec-i koddan sonra yazmaq</td><td class="muted">Formal sənəd, review faydasız</td><td>Əvvəl spec</td></tr>
+<tr><td>Spec-də sinif və metod adları</td><td class="muted">Kod planıdır</td><td>Davranışı yaz</td></tr>
+<tr><td>"Düzgün", "tez", "rahat"</td><td class="muted">Test olunmur</td><td>Status, kod, müddət</td></tr>
+<tr><td>Kod dəyişib, spec yox</td><td class="muted">Səssiz kənarlaşma</td><td>Əvvəl spec</td></tr>
+<tr><td>Spec MR-da <code>Closes</code></td><td class="muted">Ticket kodsuz bağlanır</td><td><code>Refs</code></td></tr>
+<tr><td>Bir sətir üçün spec</td><td class="muted">Bürokratiya</td><td>Bölmə 04</td></tr>
+<tr><td>Hotfix spec gözləyir</td><td class="muted">Prod zərər çəkir</td><td>Heç vaxt gözləmir</td></tr>
+<tr><td>Archive unudulub</td><td class="muted"><code>specs/</code> köhnəlir</td><td>Kod MR-da archive</td></tr>
+</table></div>
+</section>
+
+<section id="s14">
+<h2><span class="n">14</span>FAQ</h2>
+<details><summary>Spec review ikinci code review deyilmi?</summary><p>Xeyr. Texniki dizaynın fokuslu müzakirəsidir, bir səhifə böyük diff-dən diqqətlə oxunur. Kiçik dəyişikliklər bir MR-da gedir.</p></details>
+<details><summary>Spec ticket-i əvəz edirmi?</summary><p>Xeyr. Biznes niyyəti ticket-də qalır. Spec texniki davranış müqaviləsidir.</p></details>
+<details><summary>Sub-task açmağa davam edək?</summary><p>İstəsəniz. <code>tasks.md</code> texniki bölgüdür.</p></details>
+<details><summary>OpenSpec məcburidirmi?</summary><p>Xeyr. Artefaktları, review addımını və archive-ı saxla, istənilən alət olar.</p></details>
+<details><summary>AI agent spec-i yaza bilərmi?</summary><p>Bəli. İnsan yenə review edir və sahiblik edir.</p></details>
+<details><summary>Mövcud servisi tam spec-ə köçürək?</summary><p>Xeyr. Yalnız yeni dəyişikliklər. <code>specs/</code> tədricən dolur.</p></details>
+</section>
+
+<footer>
+  İstinadlar: <a href="https://github.com/Fission-AI/OpenSpec">OpenSpec</a> · <a href="https://www.rfc-editor.org/rfc/rfc2119">RFC 2119</a> · <a href="https://adr.github.io/">ADR</a><br>
+  Lisenziya: <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>.
+</footer>
+</main>
+</div>
+<script src="app.js"></script>
+</body>
+</html>
